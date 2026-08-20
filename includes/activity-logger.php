@@ -24,6 +24,16 @@ function logActivity($pdo,$user_id,$email,$action, $status='success'){
             ) VALUES (?,?,?,?,?,?)
         ");
 
+        $success = $stmt->execute([
+            $user_id,
+            $email,
+            $action,
+            $status,
+            $ip,
+            $user_agent
+            ]);
+            return $success;
+
     } catch(PDOException $e){
         error_log("Activity Log Error:" .$e->getMessage());
         return false;

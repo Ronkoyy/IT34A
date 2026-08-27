@@ -1,12 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    
-</head>
-<body>
+<?php
+require_once('config/config.php');
 
-</body>
-</html>
+$user_id = "root" ?? null;
+$user_email = "root" ?? null;
+
+$button = [
+    'Login',
+    'Logout',
+    'Create Record',
+    'Update Record',
+    'Delete Record',
+    'View Record',
+    'Upload File',
+    'Download',
+    'Search',
+    'Generate Report',
+];
+?>
+<table border="1" cellpadding="8" align="center">
+    <tr>
+        <th>Action</th>
+        <th>Test</th>
+        </tr>
+        <?php foreach ($button as $button):?>
+            <tr>
+            <td><?= htmlspecialchars($button) ?></td>
+            <td>
+                    <form method="post">
+                        <input type= "hidden" name="action"
+                        value="<?= htmlspecialchars($button) ?>"
+                        >
+                        <button type="submit">Test</button>
+                    </form>
+                </td>
+
+            </tr>
+
+        <?php endforeach; ?>
+</table>
+<?php
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+            $action = $_POST['action'] ?? "test activity";
+
+            $status = random_int(0, 1) === 1? 'success' : 'failed';
+
+            $success = logActivity(
+                $pdo,
+                $user_id,
+                $user_email,
+                $action,
+                $status
+            );
+
+            if($success) {
+                echo"<p> Activity: " . htmlspecialchars($action) . 
+                " Status: " . htmlspecialchars($status) . 
+                    " Log inserted successfully.</p>";
+                } else{
+                    echo "<p> Failed to insert activity log.</p>";
+                }
+}
+?>

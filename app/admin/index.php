@@ -1,7 +1,7 @@
 <?php
 
 require_once '../../config/config.php';
-require_once '../../config/functions.php';
+
 
 requireRole('admin');
 
@@ -59,7 +59,7 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </p>
 
 
-    <table border="2">
+    <table border="1">
 
         <thead>
 

@@ -48,7 +48,7 @@ function endUserSession($pdo){
 
 }
 
-?>
+
 
 
 

@@ -15,6 +15,22 @@ $stmt = $pdo->query("
 
 $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$stmt = $pdo->query("
+    SELECT
+        s.session_id,
+        s.user_id,
+        u.user_email,
+        u.user_username,
+        s.session_start,
+        s.session_end,
+        s.session_duration
+    FROM user_sessions s
+    LEFT JOIN users u ON u.user_id = s.user_id
+    ORDER BY s.session_start DESC
+");
+
+$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 if($action == 'export'){
 
     if($section == 'activity-logs'){
@@ -52,6 +68,40 @@ if($action == 'export'){
             $rows
         );
     }
+
+    if($section == 'user-sessions'){
+
+        $exportRows = [];
+
+        foreach($sessions as $s){
+            $exportRows[] = [
+                $s['session_id'],
+                $s['user_id'],
+                $s['user_email'],
+                $s['user_username'],
+                $s['session_start'],
+                $s['session_end'] ?? 'Active',
+                $s['session_duration'] ?? '',
+            ];
+        }
+
+        logActivity(
+            $pdo,
+            $_SESSION['user_id'],
+            $_SESSION['user_email'],
+            'export_user_sessions',
+            'success'
+        );
+
+        exportCsv(
+            'user_sessions',
+            [
+                'Session ID', 'User ID', 'User Email', 'Username',
+                'Session Start', 'Session End', 'Duration (seconds)',
+            ],
+            $exportRows
+        );
+    }
 }
 ?>
 
@@ -65,6 +115,11 @@ if($action == 'export'){
 <body>
     <h1>Welcome Admin</h1>
     <a href="../../auth/signout.php">Sign Out</a>
+
+    <p>
+        <a href="index.php?section=activity-logs">Activity Logs</a> |
+        <a href="index.php?section=user-sessions">User Sessions</a>
+    </p>
 
     <?php if ($section === 'activity-logs'): ?>
         <h4>Activity Logs 
@@ -95,6 +150,39 @@ if($action == 'export'){
                         <td><?= htmlspecialchars($activity['activity_log_ip_address']) ?></td>
                         <td><?= htmlspecialchars($activity['activity_log_user_agent']) ?></td>
                         <td><?= htmlspecialchars($activity['activity_log_created_at']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+
+    <?php if ($section === 'user-sessions'): ?>
+        <h4>User Sessions
+            <a href="index.php?section=user-sessions&amp;action=export">Export CSV</a>
+        </h4>
+
+        <table id="example" class="table table-striped" style="width:auto">
+            <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>User ID</th>
+                    <th>User Email</th>
+                    <th>Username</th>
+                    <th>Session Start</th>
+                    <th>Session End</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($sessions as $session): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($session['session_id']) ?></td>
+                        <td><?= htmlspecialchars($session['user_id']) ?></td>
+                        <td><?= htmlspecialchars($session['user_email'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($session['user_username'] ?? '') ?></td>
+                        <td><?= htmlspecialchars($session['session_start']) ?></td>
+                        <td><?= htmlspecialchars($session['session_end'] ?? 'Active') ?></td>
+                        <td><?= $session['session_duration'] !== null ? gmdate('H:i:s', (int) $session['session_duration']) : '-' ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
